@@ -81,7 +81,7 @@ To use the Gemini API, you'll need an API key. If you don't already have one, cr
 Interact with Gemini's API:
 
 ```php
-$result = $container->get('openai')->geminiPro()->generateContent('Hello');
+$result = $container->get('gemini')->geminiPro()->generateContent('Hello');
 
 $result->text(); // Hello! How can I assist you today?
 ```
@@ -92,7 +92,7 @@ $result->text(); // Hello! How can I assist you today?
 Generate a response from the model given an input message. If the input contains only text, use the `gemini-pro` model.
 
 ```php
-$result = $container->get('openai')->geminiPro()->generateContent('Hello');
+$result = $container->get('gemini')->geminiPro()->generateContent('Hello');
 
 $result->text(); // Hello! How can I assist you today?
 ```
@@ -102,7 +102,7 @@ If the input contains both text and image, use the `gemini-pro-vision` model.
 
 ```php
 
-$result = $container->get('openai')->geminiProVision()
+$result = $container->get('gemini')->geminiProVision()
  ->generateContent([
   'What is this picture?',
   new Blob(
@@ -119,7 +119,7 @@ $result->text(); //  The picture shows a table with a white tablecloth. On the t
 Using Gemini, you can build freeform conversations across multiple turns.
 
 ```php
-$chat = $container->get('openai')->chat()
+$chat = $container->get('gemini')->chat()
  ->startChat(history: [
    Content::parse(part: 'The stories you write about what I have to say should be one line. Is that clear?'),
    Content::parse(part: 'Yes, I understand. The stories I write about your input should be one line long.', role: Role::MODEL)
@@ -138,7 +138,7 @@ echo $response->text(); // In the heart of England's lush countryside, amidst em
 By default, the model returns a response after completing the entire generation process. You can achieve faster interactions by not waiting for the entire result, and instead use streaming to handle partial results.
 
 ```php
-$stream = $container->get('openai')->geminiPro()
+$stream = $container->get('gemini')->geminiPro()
  ->streamGenerateContent('Write long a story about a magic backpack.');
 
 foreach ($stream as $response) {
@@ -150,7 +150,7 @@ foreach ($stream as $response) {
 When using long prompts, it might be useful to count tokens before sending any content to the model.
 
 ```php
-$response = $container->get('openai')->geminiPro()
+$response = $container->get('gemini')->geminiPro()
  ->countTokens('Write a story about a magic backpack.');
 
 echo $response->totalTokens; // 9
@@ -188,7 +188,7 @@ $generationConfig = new GenerationConfig(
     topK: 10
 );
 
-$generativeModel = $container->get('openai')->geminiPro()
+$generativeModel = $container->get('gemini')->geminiPro()
  ->withSafetySetting($safetySettingDangerousContent)
  ->withSafetySetting($safetySettingHateSpeech)
  ->withGenerationConfig($generationConfig)
@@ -201,7 +201,7 @@ Embedding is a technique used to represent information as a list of floating poi
 Use the `embedding-001` model with either `embedContents` or `batchEmbedContents`:
 
 ```php
-$response = $container->get('openai')->embeddingModel()
+$response = $container->get('gemini')->embeddingModel()
  ->embedContent("Write a story about a magic backpack.");
 
 print_r($response->embedding->values);
@@ -225,7 +225,7 @@ print_r($response->embedding->values);
 Use list models to see the available Gemini models:
 
 ```php
-$response = $container->get('openai')->models()->list();
+$response = $container->get('gemini')->models()->list();
 
 $response->models;
 //[
@@ -260,7 +260,7 @@ $response->models;
 Get information about a model, such as version, display name, input token limit, etc.
 ```php
 
-$response = $container->get('openai')->models()->retrieve(ModelType::GEMINI_PRO);
+$response = $container->get('gemini')->models()->retrieve(ModelType::GEMINI_PRO);
 
 $response->model;
 //Gemini\Data\Model Object
@@ -287,7 +287,7 @@ All responses are having a `fake()` method that allows you to easily create a re
 use Gemini\Testing\ClientFake;
 use Gemini\Responses\GenerativeModel\GenerateContentResponse;
 
-$container->get('openai')->fake([
+$container->get('gemini')->fake([
   GenerateContentResponse::fake([
     'candidates' => [
       [
@@ -303,7 +303,7 @@ $container->get('openai')->fake([
   ]),
 ]);
 
-$result = $container->get('openai')->geminiPro()->generateContent('test');
+$result = $container->get('gemini')->geminiPro()->generateContent('test');
 
 expect($result->text())->toBe('success');
 ```
@@ -314,11 +314,11 @@ In case of a streamed response you can optionally provide a resource holding the
 use Gemini\Testing\ClientFake;
 use Gemini\Responses\GenerativeModel\GenerateContentResponse;
 
-$container->get('openai')->fake([
+$container->get('gemini')->fake([
     GenerateContentResponse::fakeStream(),
 ]);
 
-$result = $container->get('openai')->geminiPro()->streamGenerateContent('Hello');
+$result = $container->get('gemini')->geminiPro()->streamGenerateContent('Hello');
 
 expect($response->getIterator()->current())
     ->text()->toBe('In the bustling city of Aethelwood, where the cobblestone streets whispered');
@@ -328,43 +328,43 @@ After the requests have been sent there are various methods to ensure that the e
 
 ```php
 // assert list models request was sent
-$container->get('openai')->models()->assertSent(callback: function ($method) {
+$container->get('gemini')->models()->assertSent(callback: function ($method) {
     return $method === 'list';
 });
 // or
-$container->get('openai')->assertSent(resource: Models::class, callback: function ($method) {
+$container->get('gemini')->assertSent(resource: Models::class, callback: function ($method) {
     return $method === 'list';
 });
 
-$container->get('openai')->geminiPro()->assertSent(function (string $method, array $parameters) {
+$container->get('gemini')->geminiPro()->assertSent(function (string $method, array $parameters) {
     return $method === 'generateContent' &&
         $parameters[0] === 'Hello';
 });
 // or
-$container->get('openai')->assertSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO, callback: function (string $method, array $parameters) {
+$container->get('gemini')->assertSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO, callback: function (string $method, array $parameters) {
     return $method === 'generateContent' &&
         $parameters[0] === 'Hello';
 });
 
 
 // assert 2 generative model requests were sent
-$container->get('openai')->assertSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO, callback: 2);
+$container->get('gemini')->assertSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO, callback: 2);
 // or
-$container->get('openai')->geminiPro()->assertSent(2);
+$container->get('gemini')->geminiPro()->assertSent(2);
 
 // assert no generative model requests were sent
-$container->get('openai')->assertNotSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO);
+$container->get('gemini')->assertNotSent(resource: GenerativeModel::class, model: ModelType::GEMINI_PRO);
 // or
-$container->get('openai')->geminiPro()->assertNotSent();
+$container->get('gemini')->geminiPro()->assertNotSent();
 
 // assert no requests were sent
-$container->get('openai')->assertNothingSent();
+$container->get('gemini')->assertNothingSent();
 ```
 
 To write tests expecting the API request to fail you can provide a `Throwable` object as the response.
 
 ```php
-$container->get('openai')->fake([
+$container->get('gemini')->fake([
     new ErrorException([
         'message' => 'The model `gemini-basic` does not exist',
         'status' => 'INVALID_ARGUMENT',
@@ -373,5 +373,5 @@ $container->get('openai')->fake([
 ]);
 
 // the `ErrorException` will be thrown
-$container->get('openai')->geminiPro()->generateContent('test');
+$container->get('gemini')->geminiPro()->generateContent('test');
 ```
