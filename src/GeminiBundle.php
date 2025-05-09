@@ -6,6 +6,4 @@ namespace Gemini\Symfony;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class GeminiBundle extends Bundle
-{
-}
+class GeminiBundle extends Bundle {}
