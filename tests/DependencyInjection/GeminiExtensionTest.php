@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Gemini\Symfony\Tests\DependencyInjection;
 
 use Gemini\Client;
+use Gemini\Contracts\ClientContract;
 use Gemini\Symfony\DependencyInjection\GeminiExtension;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -66,5 +67,51 @@ final class GeminiExtensionTest extends TestCase
             ],
             'nextPageToken' => null,
         ], $response->toArray());
+    }
+
+    public function test_base_url(): void
+    {
+        $httpClient = new MockHttpClient(function (string $method, string $url) {
+            self::assertSame('https://gemini.example.com/v1beta/models', $url);
+
+            return new MockResponse('{ "models": [] }', [
+                'http_code' => 200,
+                'response_headers' => [
+                    'content-type' => 'application/json',
+                ],
+            ]);
+        });
+
+        $container = new ContainerBuilder;
+        $container->set('http_client', $httpClient);
+
+        (new GeminiExtension)->load([
+            'gemini' => [
+                'api_key' => '123456789',
+                'base_url' => 'https://gemini.example.com/v1beta/',
+            ],
+        ], $container);
+
+        $gemini = $container->get('gemini');
+        self::assertInstanceOf(Client::class, $gemini);
+
+        self::assertSame([], $gemini->models()->list()->models);
+    }
+
+    public function test_client_contract_alias(): void
+    {
+        $container = new ContainerBuilder;
+        $container->set('http_client', new MockHttpClient);
+
+        (new GeminiExtension)->load([
+            'gemini' => [
+                'api_key' => '123456789',
+            ],
+        ], $container);
+
+        $container->setAlias('test.gemini', ClientContract::class)->setPublic(true);
+        $container->compile();
+
+        self::assertInstanceOf(Client::class, $container->get('test.gemini'));
     }
 }
