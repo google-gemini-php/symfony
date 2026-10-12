@@ -6,6 +6,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Gemini;
 use Gemini\Client;
+use Gemini\Contracts\ClientContract;
 use Gemini\Factory;
 use Symfony\Component\HttpClient\Psr18Client;
 
@@ -20,5 +21,6 @@ return static function (ContainerConfigurator $container) {
 
         ->set(Client::class)
         ->factory([service(Factory::class), 'make'])
-        ->alias('gemini', Client::class);
+        ->alias('gemini', Client::class)
+        ->alias(ClientContract::class, Client::class);
 };

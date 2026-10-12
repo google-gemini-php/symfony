@@ -29,6 +29,7 @@ final class Configuration implements ConfigurationInterface
         assert($children instanceof NodeBuilder);
 
         $children->scalarNode('api_key')->defaultValue('%env(GEMINI_API_KEY)%')->end();
+        $children->scalarNode('base_url')->defaultNull()->end();
 
         return $treeBuilder;
     }
